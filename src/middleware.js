@@ -4,8 +4,10 @@ import { QUEUE_ACTION, ONLINE } from './actions'
 
 let STATE_NAME = 'offlineQueue'
 let ASYNC_PAYLOAD_FIELDS = ['payload.promise']
+// ACTION_CREATORS should be a dictionary of key => fn() (action creators) to be dispatched directly
+let ACTION_CREATORS = []
 
-export default function middleware (stateName = STATE_NAME, asyncPayloadFields = ASYNC_PAYLOAD_FIELDS) {
+export default function middleware (stateName = STATE_NAME, asyncPayloadFields = ASYNC_PAYLOAD_FIELDS, actionCreators = ACTION_CREATORS) {
   STATE_NAME = stateName
   ASYNC_PAYLOAD_FIELDS = asyncPayloadFields
   return ({ getState, dispatch }) => (next) => (action) => {
@@ -16,7 +18,13 @@ export default function middleware (stateName = STATE_NAME, asyncPayloadFields =
     // check if it's a direct action for us
     if (action.type === ONLINE) {
       const result = next(action)
-      queue.forEach((actionInQueue) => dispatch(actionInQueue))
+      queue.forEach((actionInQueue) => {
+        if (actionInQueue.payload.action) {
+          dispatch(actionCreators[actionInQueue.payload.action](...action.payload.args))
+        } else {
+          dispatch(actionInQueue)
+        }
+      })
       return result
     }
 

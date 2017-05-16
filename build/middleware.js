@@ -18,12 +18,17 @@ var _actions = require('./actions');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var STATE_NAME = 'offlineQueue';
 var ASYNC_PAYLOAD_FIELDS = ['payload.promise'];
+// ACTION_CREATORS should be a dictionary of key => fn() (action creators) to be dispatched directly
+var ACTION_CREATORS = [];
 
 function middleware() {
   var stateName = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : STATE_NAME;
   var asyncPayloadFields = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : ASYNC_PAYLOAD_FIELDS;
+  var actionCreators = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : ACTION_CREATORS;
 
   STATE_NAME = stateName;
   ASYNC_PAYLOAD_FIELDS = asyncPayloadFields;
@@ -42,7 +47,11 @@ function middleware() {
         if (action.type === _actions.ONLINE) {
           var result = next(action);
           queue.forEach(function (actionInQueue) {
-            return dispatch(actionInQueue);
+            if (actionInQueue.payload.action) {
+              dispatch(actionCreators[actionInQueue.payload.action].apply(actionCreators, _toConsumableArray(action.payload.args)));
+            } else {
+              dispatch(actionInQueue);
+            }
           });
           return result;
         }
