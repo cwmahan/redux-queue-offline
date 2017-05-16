@@ -48,7 +48,7 @@ function middleware() {
           var result = next(action);
           queue.forEach(function (actionInQueue) {
             if (actionInQueue.payload.action) {
-              dispatch(actionCreators[actionInQueue.payload.action].apply(actionCreators, _toConsumableArray(action.payload.args)));
+              dispatch(actionCreators[actionInQueue.payload.action].apply(actionCreators, _toConsumableArray(actionInQueue.payload.args)));
             } else {
               dispatch(actionInQueue);
             }
